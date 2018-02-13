@@ -54,14 +54,10 @@ function StegModule(id, ppm) {
  */
 StegModule.prototype.hide = function(msg) {
   //TODO: hide STEG_MAGIC + msg + '\0' into a copy of this.ppm
-var hexapixelbinaryarray = [],hexamsgarray = [],
-k = 0,msgarray = [],binaryarray = [],j = 0;
-
-var newimg = this.ppm.pixelBytes;
+var hexamsgarray = [],msgarray = [],binaryarray = [],imglsbbitsarray= [], j = 0;
 msg = "stg"+msg;
-//console.log(this.ppm.pixelBytes);
 
-//console.log(msg);
+console.log(msg);
 
 msgarray = msg.split('');
  msgarray.forEach(( v, i ) => {
@@ -69,55 +65,42 @@ msgarray = msg.split('');
   hexamsgarray.push (v.charCodeAt(j).toString(16));
  })
 hexamsgarray.push('00');
-//console.log(hexamsgarray);
+console.log(hexamsgarray);
 hexamsgarray.forEach(( v,i) => {
 binaryarray.push(parseInt(v, 16).toString(2));
 })
 
-//console.log(binaryarray);
+console.log(binaryarray);
 
- this.ppm.pixelBytes.forEach(( v, i ) => {
-    hexapixelbinaryarray.push (parseInt(v & 1, 10).toString(16));
-   })
-
-//console.log(hexapixelbinaryarray);
 //console.log(this.ppm.pixelBytes);
+
+this.ppm.pixelBytes.forEach((v,i) => {
+imglsbbitsarray.push();
+
+})
+
+
 binaryarray.forEach(( v,i) => {
-if(v.length == 7){v = '0' + v;}
-
-//console.log(v);
-
 let bitsarray = v.split('');
-
-if(bitsarray.length == 1)
-{
-while(bitsarray.length != 8)
-{
-bitsarray.push('0');
-}
-}
-//console.log(bitsarray);
-
 bitsarray.forEach((v,i) => {
-if(hexapixelbinaryarray[k] != v)
+
+if(bitsarray.length == 7)
 {
-hexapixelbinaryarray[k] = v;
-newimg[k] = newimg[k] + 1;
+//this.ppm.pixelBytes[]
 }
-//console.log("new lsb bits :" +hexapixelbinaryarray[k]+"  msg binary bits  "+v);
-//console.log(this.ppm.pixelBytes);
+else
+{
 
-k++;
+}
+
 
 })
 
 })
 
-this.ppm.pixelBytes = newimg;
-//console.log(hexapixelbinaryarray);
 //this.ppm.push(hexamsgarray);
   //construct copy as shown below, then update pixelBytes in the copy.
-  return { ppm: new Ppm(this.ppm)};
+  return { ppm : new Ppm(this.ppm)};
 }
 
 /** Return message hidden in this StegModule object.  Specifically, if
@@ -145,8 +128,6 @@ StegModule.prototype.unhide = function() {
 
 var hexapixelarray = [],binaryarray = [],temparray = [],
 msghexaarray =[],msgarray = [],count = 0,message = '';
-
-//console.log(this.ppm.pixelBytes);
  this.ppm.pixelBytes.forEach(( v, i ) => {
     hexapixelarray.push (parseInt(v & 1, 10).toString(16));
    })
