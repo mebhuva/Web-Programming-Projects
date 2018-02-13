@@ -54,8 +54,46 @@ function StegModule(id, ppm) {
  */
 StegModule.prototype.hide = function(msg) {
   //TODO: hide STEG_MAGIC + msg + '\0' into a copy of this.ppm
+var hexamsgarray = [],msgarray = [],binaryarray = [],j = 0;
+msg = "stg"+msg;
+
+console.log(msg);
+
+msgarray = msg.split('');
+ msgarray.forEach(( v, i ) => {
+
+  hexamsgarray.push (v.charCodeAt(j).toString(16));
+ })
+hexamsgarray.push('00');
+console.log(hexamsgarray);
+hexamsgarray.forEach(( v,i) => {
+binaryarray.push(parseInt(v, 16).toString(2));
+})
+
+console.log(binaryarray);
+
+//console.log(this.ppm.pixelBytes);
+binaryarray.forEach(( v,i) => {
+let bitsarray = v.split('');
+bitsarray.forEach((v,i) => {
+
+if(bitsarray.length == 7)
+{
+//this.ppm.pixelBytes[]
+}
+else
+{
+
+}
+
+
+})
+
+})
+
+//this.ppm.push(hexamsgarray);
   //construct copy as shown below, then update pixelBytes in the copy.
-  return { ppm: new Ppm(this.ppm) };
+  return { ppm : new Ppm(this.ppm)};
 }
 
 /** Return message hidden in this StegModule object.  Specifically, if
@@ -79,8 +117,58 @@ StegModule.prototype.hide = function(msg) {
  */
 StegModule.prototype.unhide = function() {
   //TODO
-  return { msg: '' };
+
+
+var hexapixelarray = [],binaryarray = [],temparray = [],
+msghexaarray =[],msgarray = [],count = 0,message = '';
+ this.ppm.pixelBytes.forEach(( v, i ) => {
+    hexapixelarray.push (parseInt(v & 1, 10).toString(16));
+   })
+hexapixelarray.forEach(( v, i ) => {
+    temparray.push(v);
+
+if(count == 7)
+{
+binaryarray.push(temparray.join(''));
+temparray = []; 
+count = 0;
+}
+else
+{
+count++;
+}
+})
+
+var string,i = 0;
+while(binaryarray[i] != 0)
+{
+msghexaarray.push(parseInt(binaryarray[i],2).toString(16));
+i++;}
+
+msghexaarray.forEach(( v, i ) => {
+msgarray.push (String.fromCharCode(parseInt(v, 16)));
+})
+
+if(i==0)
+{
+string = "STEG_BAD_MSG : "+this.ppm+"A bad message was decoded";
 }
 
 
+string = msgarray.join('');
+var stg = string.slice(0,2);
+var stringmsg = string.slice(3);
+
+if(string == '')
+{
+string = "STEG_NO_MSG : "+this.ppm+'image does not have a message';
+}
+
+  return { msg: stringmsg  };
+}
+
+
+
 module.exports = StegModule;
+
+
