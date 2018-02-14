@@ -59,12 +59,12 @@ k = 0,msgarray = [],binaryarray = [],j = 0;
 //console.log("lol..............");
 var newimg = this.ppm.pixelBytes;
 
-//msg = msg.replace(/'/g,'');
+msg = msg.replace(/'/g,'');
 
 msg = "stg"+msg;
 //console.log(this.ppm.pixelBytes);
 
-//console.log(msg);
+console.log(msg);
 
 msgarray = msg.split('');
  msgarray.forEach(( v, i ) => {
@@ -103,7 +103,7 @@ while(bitsarray.length != 8)
 bitsarray.push('0');
 }
 }
-//console.log(bitsarray);
+console.log(bitsarray);
 
 bitsarray.forEach((v,i) => {
 if(hexapixelbinaryarray[k] != v)

@@ -56,15 +56,12 @@ StegModule.prototype.hide = function(msg) {
   //TODO: hide STEG_MAGIC + msg + '\0' into a copy of this.ppm
 var hexapixelbinaryarray = [],hexamsgarray = [],
 k = 0,msgarray = [],binaryarray = [],j = 0;
-//console.log("lol..............");
-var newimg = this.ppm.pixelBytes;
 
-//msg = msg.replace(/'/g,'');
-
+var newimg =  new Ppm(this.ppm);
 msg = "stg"+msg;
-//console.log(this.ppm.pixelBytes);
+console.log(this.ppm.pixelBytes);
 
-//console.log(msg);
+console.log(msg);
 
 msgarray = msg.split('');
  msgarray.forEach(( v, i ) => {
@@ -76,6 +73,7 @@ hexamsgarray.push('00');
 hexamsgarray.forEach(( v,i) => {
 binaryarray.push(parseInt(v, 16).toString(2));
 })
+
 //console.log(binaryarray);
 
  this.ppm.pixelBytes.forEach(( v, i ) => {
@@ -85,13 +83,8 @@ binaryarray.push(parseInt(v, 16).toString(2));
 //console.log(hexapixelbinaryarray);
 //console.log(this.ppm.pixelBytes);
 binaryarray.forEach(( v,i) => {
-//if(v.length == 7){v = '0' + v;}
-//if(v.length == 6){v = '0' + v;}
+if(v.length == 7){v = '0' + v;}
 
-while(v.length != 8)
-{
-v = '0'+v;
-}
 //console.log(v);
 
 let bitsarray = v.split('');
@@ -109,7 +102,7 @@ bitsarray.forEach((v,i) => {
 if(hexapixelbinaryarray[k] != v)
 {
 hexapixelbinaryarray[k] = v;
-newimg[k] = newimg[k] + 1;
+newimg.pixelBytes[k] = newimg.pixelBytes[k] + 1;
 }
 //console.log("new lsb bits :" +hexapixelbinaryarray[k]+"  msg binary bits  "+v);
 //console.log(this.ppm.pixelBytes);
@@ -119,12 +112,10 @@ k++;
 })
 
 })
-
-this.ppm.pixelBytes = newimg;
 //console.log(hexapixelbinaryarray);
 //this.ppm.push(hexamsgarray);
   //construct copy as shown below, then update pixelBytes in the copy.
-  return { ppm: new Ppm(this.ppm)};
+  return { newimg};
 }
 
 /** Return message hidden in this StegModule object.  Specifically, if
@@ -135,7 +126,7 @@ this.ppm.pixelBytes = newimg;
  *  STEG_MAGIC or the terminating NUL '\0' character.
  *
  *  The function will detect the following errors:
- *
+m *
  *    STEG_NO_MSG:    The image contained in this Steg object does not
  *                    contain a hidden message; detected by not
  *                    seeing this Steg object's underlying image pixel
@@ -153,7 +144,7 @@ StegModule.prototype.unhide = function() {
 var hexapixelarray = [],binaryarray = [],temparray = [],
 msghexaarray =[],msgarray = [],count = 0,message = '';
 
-//console.log(this.ppm.pixelBytes);
+console.log(this.ppm.pixelBytes);
  this.ppm.pixelBytes.forEach(( v, i ) => {
     hexapixelarray.push (parseInt(v & 1, 10).toString(16));
    })
@@ -182,8 +173,6 @@ msghexaarray.forEach(( v, i ) => {
 msgarray.push (String.fromCharCode(parseInt(v, 16)));
 })
 
-
-
 if(i==0)
 {
 string = "STEG_BAD_MSG : "+this.ppm+"A bad message was decoded";
@@ -191,8 +180,6 @@ string = "STEG_BAD_MSG : "+this.ppm+"A bad message was decoded";
 
 
 string = msgarray.join('');
-//console.log(string);
-
 var stg = string.slice(0,2);
 var stringmsg = string.slice(3);
 
