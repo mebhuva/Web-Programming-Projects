@@ -54,39 +54,45 @@ function StegModule(id, ppm) {
  */
 StegModule.prototype.hide = function(msg) {
   //TODO: hide STEG_MAGIC + msg + '\0' into a copy of this.ppm
- var returnmsg = this.unhide();
- var hexapixelbinaryarray = [],hexamsgarray = [], k = 0,msgarray = [],binaryarray = [],j = 0;
- var newimg = this.ppm.pixelBytes;
- if(returnmsg.msg != null) return {error: "STEG_MSG: "+ this.id +" image already contains a hidden message"};
-var maxMsgSize = (this.ppm.width*this.ppm.height*(3/8))-3;
+var hexapixelbinaryarray = [],hexamsgarray = [],
+k = 0,msgarray = [],binaryarray = [],j = 0;
+//console.log("lol..............");
+var newimg = this.ppm.pixelBytes;
 
-if(msg.length+1>=maxMsgSize)
-{
-return {error: "STEG_TOO_BIG : "+this.id+" message too big to be hidden in image"};
-}
+//msg = msg.replace(/'/g,'');
+
 msg = "stg"+msg;
+//console.log(this.ppm.pixelBytes);
+
+//console.log(msg);
+
 msgarray = msg.split('');
  msgarray.forEach(( v, i ) => {
 
   hexamsgarray.push (v.charCodeAt(j).toString(16));
  })
 hexamsgarray.push('00');
-
+//console.log(hexamsgarray);
 hexamsgarray.forEach(( v,i) => {
 binaryarray.push(parseInt(v, 16).toString(2));
 })
+//console.log(binaryarray);
 
  this.ppm.pixelBytes.forEach(( v, i ) => {
     hexapixelbinaryarray.push (parseInt(v & 1, 10).toString(16));
    })
 
-
+//console.log(hexapixelbinaryarray);
+//console.log(this.ppm.pixelBytes);
 binaryarray.forEach(( v,i) => {
+//if(v.length == 7){v = '0' + v;}
+//if(v.length == 6){v = '0' + v;}
 
 while(v.length != 8)
 {
 v = '0'+v;
 }
+//console.log(v);
 
 let bitsarray = v.split('');
 
@@ -97,6 +103,7 @@ while(bitsarray.length != 8)
 bitsarray.push('0');
 }
 }
+//console.log(bitsarray);
 
 bitsarray.forEach((v,i) => {
 if(hexapixelbinaryarray[k] != v)
@@ -104,6 +111,8 @@ if(hexapixelbinaryarray[k] != v)
 hexapixelbinaryarray[k] = v;
 newimg[k] = newimg[k] + 1;
 }
+//console.log("new lsb bits :" +hexapixelbinaryarray[k]+"  msg binary bits  "+v);
+//console.log(this.ppm.pixelBytes);
 
 k++;
 
@@ -112,7 +121,10 @@ k++;
 })
 
 this.ppm.pixelBytes = newimg;
-return { ppm: new Ppm(this.ppm)};
+//console.log(hexapixelbinaryarray);
+//this.ppm.push(hexamsgarray);
+  //construct copy as shown below, then update pixelBytes in the copy.
+  return { ppm: new Ppm(this.ppm)};
 }
 
 /** Return message hidden in this StegModule object.  Specifically, if
@@ -135,12 +147,13 @@ return { ppm: new Ppm(this.ppm)};
  * Each error message must start with the above IDs (STEG_NO_MSG, etc).
  */
 StegModule.prototype.unhide = function() {
+  //TODO
 
 
 var hexapixelarray = [],binaryarray = [],temparray = [],
 msghexaarray =[],msgarray = [],count = 0,message = '';
 
-
+//console.log(this.ppm.pixelBytes);
  this.ppm.pixelBytes.forEach(( v, i ) => {
     hexapixelarray.push (parseInt(v & 1, 10).toString(16));
    })
@@ -159,35 +172,37 @@ count++;
 }
 })
 
-var string = null,i = 0;
+var string,i = 0;
 while(binaryarray[i] != 0)
 {
 msghexaarray.push(parseInt(binaryarray[i],2).toString(16));
 i++;}
+
 msghexaarray.forEach(( v, i ) => {
 msgarray.push (String.fromCharCode(parseInt(v, 16)));
 })
 
 
 
+if(i==0)
+{
+string = "STEG_NO_MSG : "+this.ppm+'image does not have a message';
 
+}
 
 
 string = msgarray.join('');
+//console.log(string);
 
+var stg = string.slice(0,2);
+var stringmsg = string.slice(3);
 
-var stg = string.slice(0,3);
-var stringmsg = null;
-stringmsg = string.slice(3);
-//console.log("i = " +i+" binary length "+binaryarray.length);
-if(i+1==binaryarray.length)
+if(string == '')
 {
-return {error: "STEG_BAD_MSG : "+this.id+" A bad message was decoded "};
+string = "STEG_BAD_MSG : "+this.ppm+"A bad message was decoded";
+
 }
-else if(stg  != 'stg')
-{
-return {error:"STEG_NO_MSG : "+this.id+" image does not have a message"};
-}
+
   return { msg: stringmsg  };
 }
 
