@@ -177,10 +177,11 @@ string = msgarray.join('');
 
 
 var stg = string.slice(0,3);
-var stringmsg = null;
+var stringmsg = "";
 stringmsg = string.slice(3);
 //console.log("i = " +i+" binary length "+binaryarray.length);
-if(i+1==binaryarray.length)
+const condition = stringmsg.indexOf("\0") === -1;
+if(condition)
 {
 return {error: "STEG_BAD_MSG : "+this.id+" A bad message was decoded "};
 }
