@@ -17,7 +17,7 @@
 </style>
   </head>
   <body>
-    <p class="error">{{msg}}</p>
+    <p class="error">{{errmsg}}</p>
     <form method="post" action="/unHideSuccess">
 <div class="container">
  {{#images}}

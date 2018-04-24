@@ -6,7 +6,8 @@ const fs = require('fs');
 const mustache = require('mustache');
 const querystring = require('querystring');
 const axios = require('axios');
-
+const multer = require('multer');
+const upload = multer();
 const STATIC_DIR = 'statics';
 const TEMPLATES_DIR = 'templates';
 
@@ -17,6 +18,7 @@ function serve(port, base, model) {
   app.locals.model = model;
   process.chdir(__dirname);
   app.use(base, express.static(STATIC_DIR));
+  bodyParser.urlencoded({extended: false});
   setupTemplates(app);
   setupRoutes(app);
   app.listen(port, function() {
@@ -26,7 +28,7 @@ function serve(port, base, model) {
 
 
 module.exports = serve;
-
+const IMG_MSG = 'msg';
 /******************************** Routes *******************************/
 
 function setupRoutes(app) {
@@ -36,7 +38,7 @@ function setupRoutes(app) {
 })
   app.get(`/Hide`, Hide(app));
   app.get(`/unHide`, unHide(app));
-  app.post(`/HideSuccess`,bodyParser.urlencoded({extended: false}),HideSuccess(app));
+  app.post(`/HideSuccess`,upload.single(IMG_MSG),HideSuccess(app));
   app.post(`/unHideSuccess`,bodyParser.urlencoded({extended: false}),unHideSuccess(app));
 }
 
@@ -44,7 +46,7 @@ function setupRoutes(app) {
 
 function Hide(app) {
   return async function(req, res) {
-    const list = await axios.get('http:\/\/localhost:1234/api/images/inputs');
+    const list = await axios.get(app.locals.model+'/api/images/inputs');
 const view = {
   images: [
    
@@ -53,8 +55,8 @@ const view = {
  list.data.forEach(( v, i ) => {
     var obj =  {
       id: v,
-      URL: 'http:\/\/localhost:1234/api/images/inputs/'+v+'.png',
-      hideURL: 'http:\/\/localhost:1234/api/images/inputs/'+v
+      URL: app.locals.model+'/api/images/inputs/'+v+'.png',
+      hideURL: app.locals.model+'/api/images/inputs/'+v
     }
 view.images.push(obj);
    })  
@@ -70,12 +72,66 @@ view.images.push(obj);
 function HideSuccess(app) {
 return async function(req, res) {
 var {image , msg} = req.body;
-const data = {outGroup : 'steg' , msg : msg};
+var errmsg;
+if(isBlank(image))
+{
+errmsg = "Please select radio buton";
+}
+if(isBlank(msg))
+{
+var Filemsg;
+if(!isBlank(req.file))
+{
+ Filemsg= req.file.buffer.toString();
+}
+if(isBlank(Filemsg))
+{
+errmsg = "Please enter message in message box or upload file";
+}
+else
+{
+msg = Filemsg;
+}
+}
+var data = {outGroup : 'steg' , msg : msg};
+if(!isBlank(image)){
 image= image.replace("images", "steg");
-const hide = await axios.post(image,data);
-const imglocation = hide.headers.location.substr(hide.headers.location.lastIndexOf('/') + 1);
+
+var hide = await axios.post(image,data);
+var imglocation = hide.headers.location.substr(hide.headers.location.lastIndexOf('/') + 1);
+}
+else
+{
+errmsg = "Please select radio buton";
+}
+var html;
+if(isBlank(errmsg))
+{
 const view = {msg : msg , imglocation : imglocation , hide : hide.headers.location};
-const html = mustache.render(app.templates['hidesuccess'], view);
+ html = mustache.render(app.templates['hidesuccess'], view);
+}
+else
+{
+
+ var list = await axios.get(app.locals.model+'/api/images/inputs');
+var view = {
+  images: [
+   
+  ],
+errmsg : errmsg
+};
+ list.data.forEach(( v, i ) => {
+    var obj =  {
+      id: v,
+      URL: app.locals.model+'/api/images/inputs/'+v+'.png',
+      hideURL: app.locals.model+'/api/images/inputs/'+v
+    }
+view.images.push(obj);
+   })  
+
+html = mustache.render(app.templates['List'], view);
+}
+
 res.send(html);
 }
 }
@@ -85,8 +141,8 @@ res.send(html);
 
 function unHide(app) {
   return async function(req, res) {
-    const unhidelist = await axios.get(app.locals.model+'/api/images/steg');
-const view = {
+    var unhidelist = await axios.get(app.locals.model+'/api/images/steg');
+var view = {
   images: [
    
   ]
@@ -99,11 +155,8 @@ const view = {
     }
 view.images.push(obj);
    })  
-
      const html = mustache.render(app.templates['unHideList'], view);
     res.send(html);
-//console.log(unhidelist.data[0]);
-//res.end();
   };
 };
 
@@ -111,13 +164,44 @@ view.images.push(obj);
 
 function unHideSuccess(app) {
 return async function(req, res) {
+var errmsg;
+if(!isBlank(req.body.image)){
 var image = req.body.image;
-console.log(image);
 image= image.replace("images", "steg");
-const unhidemsg = await axios.get(image);
-console.log(unhidemsg.data.msg);
-const view = {msg : unhidemsg.data.msg};
-const html = mustache.render(app.templates['unhidesuccess'], view);
+var unhidemsg = await axios.get(image);
+
+}
+else
+{
+errmsg = "Please select radio buton";
+}
+var html;
+if(isBlank(errmsg))
+{
+
+var view = {msg : unhidemsg.data.msg};
+ html = mustache.render(app.templates['unhidesuccess'], view);
+}
+else
+{
+ var unhidelist = await axios.get(app.locals.model+'/api/images/steg');
+var view = {
+  images: [
+   
+  ],
+errmsg : errmsg
+};
+ unhidelist.data.forEach(( v, i ) => {
+    var obj =  {
+      id: v,
+      URL: app.locals.model+'/api/images/steg/'+v+'.png',
+      unhideURL: app.locals.model+'/api/images/steg/'+v
+    }
+view.images.push(obj);
+   })
+
+ html = mustache.render(app.templates['unHideList'], view);
+}
 res.send(html);
 }
 }
@@ -139,8 +223,7 @@ function setupTemplates(app) {
 }
 
 
-function doMustache(app, templateId, view) {
-  const templates = { footer: app.templates.footer };
-  return mustache.render(app.templates[templateId], view, templates);
+function isBlank(str) {
+    return (!str || /^\s*$/.test(str));
 }
 

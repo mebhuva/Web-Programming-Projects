@@ -17,8 +17,8 @@
 </style>
   </head>
   <body>
-    <p class="error">{{msg}}</p>
-    <form method="post" action="/HideSuccess">
+    <p class="error">{{errmsg}}</p>
+    <form enctype="multipart/form-data" method="post" action="/HideSuccess" id="usrform">
 <div class="container">
  {{#images}}
     <p >
@@ -28,7 +28,9 @@
     </p>
     {{/images}}
 </div>
-    Message <input type="text" name="msg"><br>
+    Upload File <input type="file" name="msg"><br>
+Message<textarea name="msg" form="usrform"></textarea>
+    <br>
 <input type="submit" value="Submit">
 
 </form>
